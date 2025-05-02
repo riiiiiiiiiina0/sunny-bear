@@ -31,8 +31,8 @@ function removeLightTheme(tabId) {
 
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // Only process if URL has loaded completely
-  if (changeInfo.status === 'complete' && tab.url) {
+  // Process when a URL has loaded or is loading
+  if (tab.url && changeInfo.status === 'loading') {
     try {
       // Get list of URLs that should be converted to light theme
       const urls = await getUrls();
@@ -45,7 +45,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       });
 
       if (shouldApplyLightTheme) {
-        // Execute content script to apply light theme
+        // Execute content script to apply light theme as early as possible
         applyLightTheme(tabId);
       }
     } catch (error) {
