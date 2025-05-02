@@ -4,6 +4,10 @@
  */
 
 (function () {
+  if (document.getElementById('light-theme-extension-styles')) {
+    return;
+  }
+
   console.log('Light Theme content script running');
 
   // Apply light theme conversion

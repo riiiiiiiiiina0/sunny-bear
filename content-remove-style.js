@@ -13,14 +13,9 @@
    * Function to remove light theme styles from the current page
    */
   function removeLightThemeStyles() {
-    const styleElement = document.getElementById(
-      'light-theme-extension-styles',
-    );
-    if (styleElement) {
-      styleElement.remove();
-      console.log('Light theme styles removed successfully');
-    } else {
-      console.log('Light theme styles not found');
-    }
+    const styles = document.querySelectorAll('#light-theme-extension-styles');
+    styles.forEach((style) => {
+      style.remove();
+    });
   }
 })();
