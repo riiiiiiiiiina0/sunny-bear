@@ -70,6 +70,37 @@
     #file-input {
       display: none;
     }
+
+    .storage-info {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .storage-info h3 {
+      margin-top: 0;
+    }
+
+    #storage-quota {
+      font-family: monospace;
+      line-height: 1.5;
+    }
+
+    #refresh-quota {
+      font-size: 12px;
+      padding: 2px 5px;
+      margin-left: 10px;
+      cursor: pointer;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      background-color: #f0f0f0;
+    }
+
+    #refresh-quota:hover {
+      background-color: #e0e0e0;
+    }
   </style>
 </head>
 
@@ -103,6 +134,11 @@
         <button id="export-btn">Export URLs</button>
         <button id="import-btn">Import URLs</button>
         <input type="file" id="file-input" accept=".json">
+      </div>
+
+      <div class="storage-info">
+        <h3>Storage Info <button id="refresh-quota" title="Refresh storage info">↻</button></h3>
+        <div id="storage-quota">Loading storage information...</div>
       </div>
     </div>
 

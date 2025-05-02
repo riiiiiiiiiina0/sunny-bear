@@ -46,12 +46,23 @@ document.addEventListener('DOMContentLoaded', function () {
   const fileInput = /** @type {HTMLInputElement} */ (
     document.getElementById('file-input')
   );
+  // @ts-ignore
+  const storageQuotaDiv = /** @type {HTMLElement} */ (
+    document.getElementById('storage-quota')
+  );
+  // @ts-ignore
+  const refreshQuotaBtn = /** @type {HTMLButtonElement} */ (
+    document.getElementById('refresh-quota')
+  );
 
   // Store URLs locally to avoid multiple storage calls
   let urls = [];
 
   // Load stored URLs
   loadUrls();
+
+  // Get and display storage quota information
+  displayStorageQuota();
 
   async function loadUrls() {
     // Get URLs from storage
@@ -105,6 +116,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (success) {
       // Reload URLs from storage
       await loadUrls();
+      // Update storage quota display
+      displayStorageQuota();
 
       // Clear input
       urlValueInput.value = '';
@@ -142,6 +155,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (success) {
       // Reload URLs from storage
       await loadUrls();
+      // Update storage quota display
+      displayStorageQuota();
 
       // Hide edit form
       editContainer.classList.add('hidden');
@@ -166,6 +181,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (success) {
         // Reload URLs from storage
         await loadUrls();
+        // Update storage quota display
+        displayStorageQuota();
       }
     }
   }
@@ -240,6 +257,7 @@ document.addEventListener('DOMContentLoaded', function () {
             `Successfully imported ${addedCount} URLs out of ${importedUrls.length}`,
           );
           await loadUrls(); // Reload the URLs to update the UI
+          displayStorageQuota(); // Update storage quota display
         } catch (error) {
           alert('Error importing URLs: ' + error.message);
         }
@@ -261,4 +279,43 @@ document.addEventListener('DOMContentLoaded', function () {
   exportBtn.addEventListener('click', handleExport);
   importBtn.addEventListener('click', handleImportClick);
   fileInput.addEventListener('change', handleFileSelect);
+  refreshQuotaBtn.addEventListener('click', displayStorageQuota);
+
+  /**
+   * Get and display Chrome storage quota information
+   */
+  function displayStorageQuota() {
+    // Show loading message
+    storageQuotaDiv.innerHTML = 'Loading storage information...';
+
+    // Check if chrome.storage.sync.getBytesInUse exists
+    if (chrome.storage.sync.getBytesInUse) {
+      chrome.storage.sync.getBytesInUse(null, (bytesInUse) => {
+        chrome.storage.sync.get(null, (items) => {
+          let itemsCount = Object.keys(items).length;
+
+          // Get sync storage limits
+          // Chrome sync storage limits: https://developer.chrome.com/docs/extensions/reference/storage#property-sync
+          const QUOTA_BYTES = 102400; // 100 KB
+          const QUOTA_BYTES_PER_ITEM = 8192; // 8 KB
+          const QUOTA_MAX_ITEMS = 512; // 512 items
+
+          const usedPercentage = ((bytesInUse / QUOTA_BYTES) * 100).toFixed(2);
+          const itemsPercentage = (
+            (itemsCount / QUOTA_MAX_ITEMS) *
+            100
+          ).toFixed(2);
+
+          storageQuotaDiv.innerHTML = `
+            <div><strong>Bytes in use:</strong> ${bytesInUse.toLocaleString()} / ${QUOTA_BYTES.toLocaleString()} bytes (${usedPercentage}%)</div>
+            <div><strong>Items stored:</strong> ${itemsCount} / ${QUOTA_MAX_ITEMS} (${itemsPercentage}%)</div>
+            <div><strong>Max bytes per item:</strong> ${QUOTA_BYTES_PER_ITEM.toLocaleString()} bytes</div>
+            <div><small>Last updated: ${new Date().toLocaleString()}</small></div>
+          `;
+        });
+      });
+    } else {
+      storageQuotaDiv.innerHTML = 'Storage quota information is not available.';
+    }
+  }
 });
