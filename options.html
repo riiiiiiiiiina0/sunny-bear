@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Light Theme Options</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #ddd;
+    }
+
+    th,
+    td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    input,
+    button {
+      padding: 8px;
+      margin: 5px 0;
+    }
+
+    .form-group {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .actions {
+      display: flex;
+      gap: 5px;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .import-export {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    #file-input {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Light Theme Options</h1>
+
+    <div>
+      <h2>Add New URL</h2>
+      <div class="form-group">
+        <input type="url" id="url-value" placeholder="https://example.com" required>
+        <button id="add-btn">Add URL</button>
+      </div>
+    </div>
+
+    <div>
+      <h2>Stored URLs</h2>
+      <table id="url-table">
+        <thead>
+          <tr>
+            <th>URL</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="url-list">
+          <!-- URL list will be populated here -->
+        </tbody>
+      </table>
+
+      <div class="import-export">
+        <button id="export-btn">Export URLs</button>
+        <button id="import-btn">Import URLs</button>
+        <input type="file" id="file-input" accept=".json">
+      </div>
+    </div>
+
+    <div id="edit-container" class="hidden">
+      <h2>Edit URL</h2>
+      <div class="form-group">
+        <input type="hidden" id="edit-index">
+        <input type="url" id="edit-url" placeholder="https://example.com" required>
+        <button id="save-btn">Save</button>
+        <button id="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Use an external script file instead of inline script -->
+  <script type="module" src="options.js"></script>
+</body>
+
+</html>

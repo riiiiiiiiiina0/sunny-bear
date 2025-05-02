@@ -1,0 +1,15 @@
+{
+  "name": "light-theme",
+  "version": "1.0.0",
+  "description": "A Chrome extension that converts dark-themed websites into light themes for better readability in bright environments.",
+  "main": "background.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/chrome": "^0.0.318"
+  }
+}
