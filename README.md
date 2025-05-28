@@ -2,6 +2,8 @@
 
 A Chrome extension that converts dark-themed websites into light themes for better readability in bright environments.
 
+<a href="https://www.buymeacoffee.com/treeee" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+
 ## Features
 
 - Automatically converts dark-themed websites to light theme
@@ -16,7 +18,7 @@ A Chrome extension that converts dark-themed websites into light themes for bett
 
 ### From Chrome Web Store
 
-_(Coming soon)_
+[Install Light Theme from Chrome Web Store](https://chromewebstore.google.com/detail/light-theme/jdjdmghffibmbnnhidfhdjegkcemmanb)
 
 ### Manual Installation
 
