@@ -5,151 +5,129 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Light Theme Options</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    table,
-    th,
-    td {
-      border: 1px solid #ddd;
-    }
-
-    th,
-    td {
-      padding: 8px;
-      text-align: left;
-    }
-
-    th {
-      background-color: #f2f2f2;
-    }
-
-    input,
-    button {
-      padding: 8px;
-      margin: 5px 0;
-    }
-
-    .form-group {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .actions {
-      display: flex;
-      gap: 5px;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .import-export {
-      display: flex;
-      gap: 10px;
-      margin-top: 20px;
-    }
-
-    #file-input {
-      display: none;
-    }
-
-    .storage-info {
-      margin-top: 20px;
-      padding: 10px;
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      border: 1px solid #ddd;
-    }
-
-    .storage-info h3 {
-      margin-top: 0;
-    }
-
-    #storage-quota {
-      font-family: monospace;
-      line-height: 1.5;
-    }
-
-    #refresh-quota {
-      font-size: 12px;
-      padding: 2px 5px;
-      margin-left: 10px;
-      cursor: pointer;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      background-color: #f0f0f0;
-    }
-
-    #refresh-quota:hover {
-      background-color: #e0e0e0;
-    }
-  </style>
+  <!-- DaisyUI CSS (includes Tailwind CSS) -->
+  <link href="libs/daisyui.min.css" rel="stylesheet" type="text/css" />
+  <!-- Tailwind CSS Browser Build -->
+  <script src="libs/tailwindcss-browser.js"></script>
 </head>
 
-<body>
-  <div class="container">
-    <h1>Light Theme Options</h1>
-
-    <div>
-      <h2>Add New URL</h2>
-      <div class="form-group">
-        <input type="url" id="url-value" placeholder="https://example.com" required>
-        <button id="add-btn">Add URL</button>
-      </div>
-    </div>
-
-    <div>
-      <h2>Stored URLs</h2>
-      <table id="url-table">
-        <thead>
-          <tr>
-            <th>URL</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="url-list">
-          <!-- URL list will be populated here -->
-        </tbody>
-      </table>
-
-      <div class="import-export">
-        <button id="export-btn">Export URLs</button>
-        <button id="import-btn">Import URLs</button>
-        <input type="file" id="file-input" accept=".json">
+<body class="bg-base-100 min-h-screen">
+  <div class="container mx-auto max-w-4xl p-6">
+    <div class="space-y-8">
+      <div class="text-center">
+        <h1 class="!text-4xl font-bold text-primary mb-2">Light Theme Options</h1>
+        <p class="text-base-content/70">Manage your stored URLs</p>
       </div>
 
-      <div class="storage-info">
-        <h3>Storage Info <button id="refresh-quota" title="Refresh storage info">↻</button></h3>
-        <div id="storage-quota">Loading storage information...</div>
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
+          <h2 class="card-title text-2xl mb-4">Add New URL</h2>
+          <div class="flex gap-3 items-end">
+            <div class="form-control flex-1">
+              <label class="label">
+                <span class="label-text">Enter URL</span>
+              </label>
+              <input type="url" id="url-value" placeholder="https://example.com" class="input w-full" required>
+            </div>
+            <button id="add-btn" class="btn btn-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Add URL
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
 
-    <div id="edit-container" class="hidden">
-      <h2>Edit URL</h2>
-      <div class="form-group">
-        <input type="hidden" id="edit-index">
-        <input type="url" id="edit-url" placeholder="https://example.com" required>
-        <button id="save-btn">Save</button>
-        <button id="cancel-btn">Cancel</button>
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="card-title text-2xl">Stored URLs</h2>
+            <div class="flex gap-2">
+              <button id="export-btn" class="btn btn-outline btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Export
+              </button>
+              <button id="import-btn" class="btn btn-outline btn-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+                Import
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-lg bg-base-100">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th class="text-left">URL</th>
+                  <th class="text-center" width="200">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="url-list">
+                <!-- URL list will be populated here -->
+              </tbody>
+            </table>
+          </div>
+
+          <input type="file" id="file-input" accept=".json" class="hidden">
+        </div>
       </div>
+
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
+          <div class="flex items-center gap-3 mb-4">
+            <h3 class="text-xl font-semibold">Storage Information</h3>
+            <button id="refresh-quota" class="btn btn-ghost btn-sm" title="Refresh storage info">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
+          <div id="storage-quota" class="text-sm font-mono bg-base-100 p-4 rounded-lg border">
+            Loading storage information...
+          </div>
+        </div>
+      </div>
+
+      <dialog id="edit-dialog" class="modal">
+        <div class="modal-box">
+          <h3 class="font-bold text-lg mb-4">Edit URL</h3>
+          <div class="space-y-4">
+            <input type="hidden" id="edit-index">
+            <div class="form-control">
+              <label class="label">
+                <span class="label-text">Edit URL</span>
+              </label>
+              <input type="url" id="edit-url" placeholder="https://example.com" class="input input-bordered w-full"
+                required>
+            </div>
+            <div class="modal-action">
+              <button id="save-btn" class="btn btn-success">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                Save
+              </button>
+              <button id="cancel-btn" class="btn btn-outline">Cancel</button>
+            </div>
+          </div>
+        </div>
+        <form method="dialog" class="modal-backdrop">
+          <button>close</button>
+        </form>
+      </dialog>
     </div>
   </div>
 
