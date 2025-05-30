@@ -7,13 +7,39 @@
 const STORAGE_KEY = 'light_theme_urls';
 
 /**
+ * Sort URLs alphabetically (case-insensitive)
+ * @param {Array<string>} urls - Array of URLs to sort
+ * @returns {Array<string>} Sorted array of URLs
+ */
+function sortUrls(urls) {
+  return urls.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+}
+
+/**
+ * Check if a URL is valid
+ * @param {string} url - URL to check
+ * @returns {boolean} True if URL is valid, false otherwise
+ */
+function isValidUrl(url) {
+  return Boolean(
+    url &&
+      typeof url === 'string' &&
+      (url.startsWith('http') || url.startsWith('https')),
+  );
+}
+
+/**
  * Get all stored URLs
  * @returns {Promise<Array<string>>} Array of stored URLs
  */
 function getUrls() {
   return new Promise((resolve) => {
     chrome.storage.sync.get(STORAGE_KEY, (result) => {
-      resolve(result[STORAGE_KEY] || []);
+      const urls = result[STORAGE_KEY] || [];
+      // filter out invalid URLs
+      const validUrls = urls.filter(isValidUrl);
+      // Ensure URLs are always returned in alphabetical order
+      resolve(sortUrls(validUrls));
     });
   });
 }
@@ -25,8 +51,8 @@ function getUrls() {
  */
 function addUrl(url) {
   return new Promise((resolve) => {
-    if (!url || typeof url !== 'string') {
-      console.error('Invalid URL provided');
+    if (!isValidUrl(url)) {
+      console.error(`Invalid URL provided: ${url}`);
       resolve(false);
       return;
     }
@@ -39,6 +65,8 @@ function addUrl(url) {
       }
 
       urls.push(url);
+      // Sort URLs alphabetically before saving
+      sortUrls(urls);
       chrome.storage.sync.set({ [STORAGE_KEY]: urls }, () => {
         resolve(true);
       });
@@ -77,8 +105,8 @@ function deleteUrl(url) {
  */
 function updateUrl(oldUrl, newUrl) {
   return new Promise((resolve) => {
-    if (!newUrl || typeof newUrl !== 'string') {
-      console.error('Invalid new URL provided');
+    if (!isValidUrl(newUrl)) {
+      console.error(`Invalid new URL provided: ${newUrl}`);
       resolve(false);
       return;
     }
@@ -98,6 +126,8 @@ function updateUrl(oldUrl, newUrl) {
       }
 
       urls[index] = newUrl;
+      // Sort URLs alphabetically before saving
+      sortUrls(urls);
       chrome.storage.sync.set({ [STORAGE_KEY]: urls }, () => {
         resolve(true);
       });
