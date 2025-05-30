@@ -1,6 +1,6 @@
 {
   "name": "light-theme",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Chrome extension that converts dark-themed websites into light themes for better readability in bright environments.",
   "main": "background.js",
   "scripts": {
