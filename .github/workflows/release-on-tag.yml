@@ -1,0 +1,25 @@
+name: Release on Tag
+
+on:
+  push:
+    tags:
+      - 'v*' # or '*' for all tags
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Zip source code
+        run: |
+          zip -r source.zip .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: source.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

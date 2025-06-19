@@ -1,0 +1,32 @@
+name: Version and Tag on Merge
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  version_and_tag:
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, 'chore(release):') }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Needed to push tags
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Bump version and create tag
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          npm version patch -m "chore(release): %s [skip ci]"
+          git push origin main --follow-tags
