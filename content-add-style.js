@@ -49,6 +49,9 @@
    * Find all elements with background-image style and apply CSS filter
    */
   function applyBackgroundImageFilters() {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return;
+    }
     // Find elements with inline background-image styles
     const elementsWithBgImage = document.querySelectorAll('*');
 
