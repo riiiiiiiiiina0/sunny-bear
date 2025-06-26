@@ -90,7 +90,20 @@
    */
   function setupDOMObserver() {
     clearTimeout(applyBackgroundImageFiltersTimeout);
-    if (mutationObserver) return; // Observer already exists
+
+    // If an observer already exists from a previous execution of this content script
+    // (e.g. due to SPA navigation re-triggering without full page reload),
+    // disconnect it before creating a new one.
+    if (window['lightThemeExtension'] && window['lightThemeExtension'].observer) {
+      window['lightThemeExtension'].observer.disconnect();
+      // We can also clear processedElements if we want a fresh start,
+      // but existing processedElements set should still be valid.
+      // For now, just ensure one observer.
+      // The script-local `mutationObserver` variable will be (re)assigned a new observer below.
+      // If it previously held a reference to the same observer as the global one,
+      // that observer is now disconnected.
+      mutationObserver = null;
+    }
 
     mutationObserver = new MutationObserver((mutations) => {
       let needsUpdate = false;
