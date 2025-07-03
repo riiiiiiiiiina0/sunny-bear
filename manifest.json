@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Light Theme",
-  "version": "1.",
+  "version": "1.1",
   "description": "A Chrome extension that convert dark theme website into light theme",
   "icons": {
     "16": "icons/icon-16.png",
