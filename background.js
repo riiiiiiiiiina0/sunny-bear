@@ -64,7 +64,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (tab.url && (changeInfo.status === 'loading' || changeInfo.status === 'complete')) {
     await updateBadgeForTab(tab.url, tabId); // Update badge based on current state
 
-    // Original logic for applying/removing theme
+    // Revised logic for applying/removing theme
     try {
       const urls = await getUrls();
       const shouldApplyLightTheme = urls.some((url) => {
@@ -74,29 +74,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       if (shouldApplyLightTheme) {
         applyLightTheme(tabId); // This will also set the badge
       } else {
-        // If the URL is not in the list, ensure theme is removed (and badge cleared)
-        // This handles cases where a page was in the list, then removed, and user reloads.
-        // Or navigates from a themed page to a non-themed page on the same site (if origin isn't whitelisted).
-        // Note: removeLightTheme also clears the badge.
-        // We only call removeLightTheme if we are sure it should NOT be themed.
-        // The updateBadgeForTab above will handle the badge for general navigation.
-        // This specific call to removeLightTheme is more about active style removal.
-        const currentTab = await chrome.tabs.get(tabId);
-        if (currentTab.url) {
-            const currentOrigin = new URL(currentTab.url).origin;
-            const originIsListed = urls.some(url => url === currentOrigin);
-            // If the specific URL isn't listed AND its origin isn't listed, then remove.
-            if (!shouldApplyLightTheme && !originIsListed) {
-                 removeLightTheme(tabId);
-            } else if (!shouldApplyLightTheme && originIsListed) {
-                // If origin is listed, but this specific sub-page is not,
-                // we assume the origin-level rule applies, so we keep the theme.
-                // The badge would have been set by applyLightTheme if origin was matched.
-                // If only a sub-path was matched previously and now it's not,
-                // updateBadgeForTab will clear it if no other rule matches.
-                // If an origin rule IS present, applyLightTheme (via origin match) would set it.
-            }
-        }
+        // If the tab's URL does not start with any stored URL, remove the theme.
+        removeLightTheme(tabId); // This will also clear the badge
       }
     } catch (error) {
       console.error('Error in onUpdated listener:', error);
@@ -109,7 +88,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
   if (details.frameId === 0 && details.url) { // frameId === 0 means top-level frame
     await updateBadgeForTab(details.url, details.tabId); // Update badge
 
-    // Original logic for applying/removing theme
+    // Revised logic for applying/removing theme
     try {
       const urls = await getUrls();
       const shouldApplyLightTheme = urls.some((url) => {
@@ -119,16 +98,8 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
       if (shouldApplyLightTheme) {
         applyLightTheme(details.tabId); // This also sets the badge
       } else {
-        const currentTab = await chrome.tabs.get(details.tabId);
-        if (currentTab.url) {
-          const currentOrigin = new URL(currentTab.url).origin;
-          const originIsListed = urls.some(url => url === currentOrigin);
-          // Only remove if the new URL (even in SPA) is not in the list AND its origin is not.
-          if (!originIsListed) {
-            removeLightTheme(details.tabId); // This also clears the badge
-          }
-          // If origin is listed, theme/badge persists due to origin-level rule.
-        }
+        // If the new URL in SPA navigation does not start with any stored URL, remove the theme.
+        removeLightTheme(details.tabId); // This also clears the badge
       }
     } catch (error) {
       console.error('Error in onHistoryStateUpdated listener:', error);
