@@ -3,7 +3,7 @@
 Turn every dark forest (website) into a sunlit picnic spot!
 Sunny Bear is the adorable Chrome extension that transforms gloomy, dark-themed websites into bright, cheerful pages—perfect for sunny days, happy eyes, and curious bears everywhere.
 
-![](./docs/bear%20-%20sunny%20bear%20-%20poster.png)
+![](./docs/poster.jpeg)
 
 <a href="https://buymeacoffee.com/riiiiiiiiiina" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
