@@ -15,8 +15,10 @@ function applyLightTheme(tabId) {
     target: { tabId },
     files: ['content-add-style.js'],
   });
-  chrome.action.setBadgeText({ text: '✔️', tabId: tabId });
-  chrome.action.setBadgeBackgroundColor({ color: '#73C6B6', tabId: tabId }); // Optional: A greenish color
+  // Swap the extension action icon to the light version for this tab
+  chrome.action.setIcon({ path: 'icons/icon-light-48x48.png', tabId });
+  // Clear any previous badge text, if present
+  chrome.action.setBadgeText({ text: '', tabId });
 }
 
 /**
@@ -29,7 +31,9 @@ function removeLightTheme(tabId) {
     target: { tabId },
     files: ['content-remove-style.js'],
   });
-  chrome.action.setBadgeText({ text: '', tabId: tabId });
+  // Revert the extension action icon back to the default dark version
+  chrome.action.setIcon({ path: 'icons/icon-dark-48x48.png', tabId });
+  chrome.action.setBadgeText({ text: '', tabId });
 }
 
 /**
@@ -39,7 +43,8 @@ function removeLightTheme(tabId) {
  */
 async function updateBadgeForTab(url, tabId) {
   if (!url || !tabId) {
-    chrome.action.setBadgeText({ text: '', tabId: tabId });
+    chrome.action.setIcon({ path: 'icons/icon-dark-48x48.png', tabId });
+    chrome.action.setBadgeText({ text: '', tabId });
     return;
   }
   try {
@@ -47,21 +52,25 @@ async function updateBadgeForTab(url, tabId) {
     const shouldApplyLightTheme = urls.some((u) => url.startsWith(u));
 
     if (shouldApplyLightTheme) {
-      chrome.action.setBadgeText({ text: '✔️', tabId: tabId });
-      chrome.action.setBadgeBackgroundColor({ color: '#73C6B6', tabId: tabId });
+      chrome.action.setIcon({ path: 'icons/icon-light-48x48.png', tabId });
     } else {
-      chrome.action.setBadgeText({ text: '', tabId: tabId });
+      chrome.action.setIcon({ path: 'icons/icon-dark-48x48.png', tabId });
+      chrome.action.setBadgeText({ text: '', tabId });
     }
   } catch (error) {
-    console.error('Error updating badge for tab:', error);
-    chrome.action.setBadgeText({ text: '', tabId: tabId }); // Clear badge on error
+    console.error('Error updating icon for tab:', error);
+    chrome.action.setIcon({ path: 'icons/icon-dark-48x48.png', tabId });
+    chrome.action.setBadgeText({ text: '', tabId }); // Clear badge on error
   }
 }
 
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   // Process when a URL has loaded or is loading, or title changes (good proxy for SPA nav)
-  if (tab.url && (changeInfo.status === 'loading' || changeInfo.status === 'complete')) {
+  if (
+    tab.url &&
+    (changeInfo.status === 'loading' || changeInfo.status === 'complete')
+  ) {
     await updateBadgeForTab(tab.url, tabId); // Update badge based on current state
 
     // Revised logic for applying/removing theme
@@ -85,7 +94,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 // Listen for history state updates (e.g., SPA navigations)
 chrome.webNavigation.onHistoryStateUpdated.addListener(async (details) => {
-  if (details.frameId === 0 && details.url) { // frameId === 0 means top-level frame
+  if (details.frameId === 0 && details.url) {
+    // frameId === 0 means top-level frame
     await updateBadgeForTab(details.url, details.tabId); // Update badge
 
     // Revised logic for applying/removing theme
@@ -128,7 +138,7 @@ chrome.action.onClicked.addListener(async (tab) => {
     console.error('Error toggling URL:', error);
     // Attempt to set a neutral badge state for the current tab on error
     if (tab.id) {
-        chrome.action.setBadgeText({ text: '', tabId: tab.id });
+      chrome.action.setBadgeText({ text: '', tabId: tab.id });
     }
   }
 });
@@ -158,13 +168,20 @@ async function initializeBadges() {
     const urls = await getUrls();
     for (const tab of tabs) {
       if (tab.id && tab.url) {
-        const shouldApplyLightTheme = urls.some((u) => tab.url.startsWith(u));
+        const shouldApplyLightTheme = urls.some((u) => tab.url?.startsWith(u));
         if (shouldApplyLightTheme) {
-          chrome.action.setBadgeText({ text: '✔️', tabId: tab.id });
-          chrome.action.setBadgeBackgroundColor({ color: '#73C6B6', tabId: tab.id });
+          chrome.action.setIcon({
+            path: 'icons/icon-light-48x48.png',
+            tabId: tab.id,
+          });
         } else {
-          chrome.action.setBadgeText({ text: '', tabId: tab.id });
+          chrome.action.setIcon({
+            path: 'icons/icon-dark-48x48.png',
+            tabId: tab.id,
+          });
         }
+        // Ensure no badge text is displayed
+        chrome.action.setBadgeText({ text: '', tabId: tab.id });
       }
     }
   } catch (error) {

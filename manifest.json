@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Light Theme",
-  "version": "1.4.0",
-  "description": "A Chrome extension that convert dark theme website into light theme",
+  "name": "Sunny Bear",
+  "version": "1.0.0",
+  "description": "Transforms dark websites into bright, readable pages, perfect for sunny days and clear bear sightings.",
   "icons": {
-    "16": "icons/icon-16.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"
+    "16": "icons/icon-dark-16x16.png",
+    "32": "icons/icon-dark-32x32.png",
+    "48": "icons/icon-dark-48x48.png",
+    "128": "icons/icon-dark-128x128.png"
   },
   "permissions": [
     "storage",
@@ -20,10 +21,7 @@
   ],
   "action": {
     "default_icon": {
-      "16": "icons/icon-16.png",
-      "32": "icons/icon-34.png",
-      "48": "icons/icon-48.png",
-      "128": "icons/icon-128.png"
+      "48": "icons/icon-dark-48x48.png"
     }
   },
   "background": {
