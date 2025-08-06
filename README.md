@@ -1,66 +1,61 @@
-# Light Theme Chrome Extension
+# ☀️🐻‍❄️ Sunny Bear
 
-A Chrome extension that converts dark-themed websites into light themes for better readability in bright environments.
+Turn every dark forest (website) into a sunlit picnic spot!
+Sunny Bear is the adorable Chrome extension that transforms gloomy, dark-themed websites into bright, cheerful pages—perfect for sunny days, happy eyes, and curious bears everywhere.
+
+![](./docs/bear%20-%20sunny%20bear%20-%20poster.png)
 
 <a href="https://buymeacoffee.com/riiiiiiiiiina" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
-## Features
+---
 
-- Automatically converts dark-themed websites to light theme
-- Simple toggle via the extension icon - click to enable/disable for a website
-- State is remembered per website
-- Options page to manage your list of websites
-- Import/Export functionality for website list
-- Works on most websites with dark themes
-- Uses CSS filter inversion to create light themes from dark ones
+## 🌞 What is Sunny Bear?
 
-## Installation
+Is your favorite website so dark that even a polar bear can’t find their honey?
+**Sunny Bear** flips the switch and bathes every site in glorious sunlight, so you’ll never squint at midnight-black backgrounds again.
 
-### From Chrome Web Store
+---
 
-[Install Light Theme from Chrome Web Store](https://chromewebstore.google.com/detail/light-theme/jdjdmghffibmbnnhidfhdjegkcemmanb)
+## 🐻‍❄️ Features
 
-### Manual Installation
+- **Sunshine Mode:** Instantly brighten up any dark-themed website with a single click.
+- **Bear-Memory:** Remembers which sites you want to keep sunny and which ones you like a little “night mode.”
+- **Per-Site Toggle:** One bear’s sunshine is another’s shade—toggle light/dark per site, no problem!
+- **Super Simple:** Even a sleepy bear could use it. Just click the Sunny Bear icon!
+- **No Honey Required:** 100% free. No signups, no tracking—just good vibes.
 
-1. Download or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" using the toggle in the top-right corner
-4. Click "Load unpacked" and select the folder containing the extension files
-5. The extension should now be installed and active
+---
 
-## Usage
+## 🌈 How to Use
 
-1. When you visit a website with a dark theme, click the extension icon in the toolbar
-2. The website will automatically refresh with a light theme applied
-3. Click the icon again to disable the light theme for that site
-4. To manage your list of websites, right-click the extension icon and select "Options"
+1. **Install Sunny Bear** from the [Chrome Web Store](https://chromewebstore.google.com/detail/light-theme/jdjdmghffibmbnnhidfhdjegkcemmanb).
+2. When you stumble onto a dark, gloomy website, click the **☀️🐻‍❄️ Sunny Bear** icon in your toolbar.
+3. Ta-da! The page is now bear-approved bright and shiny.
+4. Click again to turn off. Sunny Bear will remember your choice.
 
-## How It Works
+---
 
-The extension:
+## 🎒 Why Sunny Bear?
 
-1. Stores a list of website origins where light theme should be applied
-2. When you visit a website, it checks if the origin is in your list
-3. If found, it injects CSS to invert colors and rotate hue by 180 degrees
-4. This effectively converts dark backgrounds to light, while preserving images and videos
-5. The extension uses Chrome's storage API to remember your preferences
-6. The Options page allows you to add, edit, delete, import, and export your list of websites
+- Bright pages for bright ideas.
+- Easy on the eyes, fun for the soul.
+- Because every bear deserves a little sunshine.
 
-## File Structure
+---
 
-- `manifest.json`: Extension configuration file
-- `background.js`: Background service worker that monitors tab activity and handles icon clicks
-- `content-add-style.js`: Script that applies the light theme conversion
-- `content-remove-style.js`: Script that removes the light theme conversion
-- `storage.js`: Module for managing website data storage
-- `options.html`: User interface for managing website list
-- `options.js`: JavaScript for the options page functionality
-- `icons/`: Directory containing extension icons
+## 🛠️ For Curious Cubs (Developers)
 
-## Contributing
+- Built with vanilla JavaScript, love, and a splash of bear magic.
+- Per-site storage using Chrome’s bear-friendly API.
+- Open source, MIT-licensed.
+  Pull requests, bug reports, and bear puns welcome!
 
-Contributions are welcome! Feel free to submit issues or pull requests :)
+---
 
-## License
+## 🍯 FAQ
 
-This project is open source and available under the [MIT License](LICENSE).
+**Q: Will Sunny Bear eat my cookies?**
+A: No, but if you leave honey on your keyboard, we make no promises.
+
+**Q: Can I have rainbow backgrounds instead?**
+A: For that, check out Rainbow Bear!
