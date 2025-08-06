@@ -1,4 +1,4 @@
-# ☀️🐻‍❄️ Sunny Bear
+# 🐻‍❄️☀️ Sunny Bear
 
 Turn every dark forest (website) into a sunlit picnic spot!
 Sunny Bear is the adorable Chrome extension that transforms gloomy, dark-themed websites into bright, cheerful pages—perfect for sunny days, happy eyes, and curious bears everywhere.
