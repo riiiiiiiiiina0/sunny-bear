@@ -39,10 +39,13 @@ function decideInjectionAndIcon(systemTheme, pageTheme, isInStoredList) {
 
 /**
  * Detect current page theme (light/dark) and system theme for a tab.
+ * New approach: capture a JPEG thumbnail of the active tab and analyze pixels.
+ * Falls back to computed-style detection when capture is unavailable.
  */
 async function detectThemesInTab(tabId) {
   try {
-    const [result] = await chrome.scripting.executeScript({
+    // Always attempt to read system theme and a fallback page theme from within the page
+    const [inPage] = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
         // Runs in page context
@@ -51,17 +54,14 @@ async function detectThemesInTab(tabId) {
           window.matchMedia('(prefers-color-scheme: dark)').matches;
 
         function parseRgbStringToRgb(colorStr) {
-          // Supports rgb() or rgba()
           if (!colorStr) return { r: 255, g: 255, b: 255, a: 1 };
           const match = colorStr
             .replace(/\s+/g, '')
             .match(/^rgba?\((\d+),(\d+),(\d+)(?:,(\d*\.?\d+))?\)$/i);
           if (!match) {
-            // Fallback for named colors like 'transparent'
             if (colorStr.toLowerCase() === 'transparent') {
               return { r: 255, g: 255, b: 255, a: 0 };
             }
-            // Try get via a temporary element
             const temp = document.createElement('div');
             temp.style.color = colorStr;
             document.body.appendChild(temp);
@@ -99,8 +99,9 @@ async function detectThemesInTab(tabId) {
             }
             el = el.parentElement;
           }
-          // Fallback to document background color or white
-          const docBg = getComputedStyle(document.documentElement).backgroundColor;
+          const docBg = getComputedStyle(
+            document.documentElement,
+          ).backgroundColor;
           const parsedDocBg = parseRgbStringToRgb(docBg);
           if (parsedDocBg.a !== 0 && docBg.toLowerCase() !== 'transparent') {
             return parsedDocBg;
@@ -112,16 +113,91 @@ async function detectThemesInTab(tabId) {
         const bgRgb = getEffectiveBackgroundColor(root);
         const textColorStr = getComputedStyle(root).color;
         const textRgb = parseRgbStringToRgb(textColorStr);
-
         const bgLum = relativeLuminance(bgRgb);
         const textLum = relativeLuminance(textRgb);
-        const pageTheme = bgLum < textLum ? 'dark' : 'light';
+        const fallbackPageTheme = bgLum < textLum ? 'dark' : 'light';
 
-        return { systemTheme: prefersDark ? 'dark' : 'light', pageTheme };
+        return {
+          systemTheme: prefersDark ? 'dark' : 'light',
+          fallbackPageTheme,
+        };
       },
     });
 
-    return result?.result || null;
+    const systemTheme = inPage?.result?.systemTheme || 'light';
+    let pageThemeFromScreenshot = null;
+
+    // Attempt screenshot-based detection only if the tab is active in its window
+    let tabInfo = null;
+    try {
+      tabInfo = await chrome.tabs.get(tabId);
+    } catch (_) {
+      tabInfo = null;
+    }
+
+    if (
+      tabInfo?.active &&
+      typeof chrome.tabs.captureVisibleTab === 'function' &&
+      typeof OffscreenCanvas === 'function' &&
+      typeof createImageBitmap === 'function'
+    ) {
+      try {
+        const dataUrl = await chrome.tabs.captureVisibleTab(tabInfo.windowId, {
+          format: 'jpeg',
+          quality: 70,
+        });
+        if (dataUrl) {
+          const response = await fetch(dataUrl);
+          const blob = await response.blob();
+          const bitmap = await createImageBitmap(blob);
+
+          // Scale down to a small thumbnail while preserving aspect ratio
+          const longestSide = Math.max(bitmap.width, bitmap.height);
+          const targetLongest = 96; // thumbnail target
+          const scale =
+            longestSide > targetLongest ? targetLongest / longestSide : 1;
+          const thumbWidth = Math.max(1, Math.round(bitmap.width * scale));
+          const thumbHeight = Math.max(1, Math.round(bitmap.height * scale));
+
+          const canvas = new OffscreenCanvas(thumbWidth, thumbHeight);
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          if (!ctx) {
+            bitmap.close?.();
+            throw new Error('2D context not available');
+          }
+          ctx.drawImage(bitmap, 0, 0, thumbWidth, thumbHeight);
+          bitmap.close?.();
+
+          const imageData = ctx.getImageData(0, 0, thumbWidth, thumbHeight);
+          const data = imageData.data;
+
+          // Compute average relative luminance over all pixels
+          let luminanceSum = 0;
+          const pixelCount = data.length / 4;
+          const srgbToLinear = (c8) => {
+            const c = c8 / 255;
+            return c <= 0.04045
+              ? c / 12.92
+              : Math.pow((c + 0.055) / 1.055, 2.4);
+          };
+          for (let i = 0; i < data.length; i += 4) {
+            const r = srgbToLinear(data[i]);
+            const g = srgbToLinear(data[i + 1]);
+            const b = srgbToLinear(data[i + 2]);
+            const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+            luminanceSum += lum;
+          }
+          const avgLum = luminanceSum / pixelCount;
+          pageThemeFromScreenshot = avgLum < 0.5 ? 'dark' : 'light';
+        }
+      } catch (_) {
+        // Ignore capture errors and fall back
+      }
+    }
+
+    const pageTheme =
+      pageThemeFromScreenshot ?? inPage?.result?.fallbackPageTheme ?? 'light';
+    return { systemTheme, pageTheme };
   } catch (error) {
     console.warn('Theme detection failed for tab', tabId, error);
     return null;
@@ -188,12 +264,18 @@ async function evaluateTab(tabId, url) {
   }
 
   try {
-    const [storedUrls, detection] = await Promise.all([getUrls(), detectThemesInTab(tabId)]);
+    const [storedUrls, detection] = await Promise.all([
+      getUrls(),
+      detectThemesInTab(tabId),
+    ]);
 
     if (!detection) {
       // If detection failed, fall back to icon by stored list and do not inject
       const inList = urlIsInStoredList(url, storedUrls);
-      setIcon(tabId, inList ? 'icons/icon-light-48x48.png' : 'icons/icon-dark-48x48.png');
+      setIcon(
+        tabId,
+        inList ? 'icons/icon-light-48x48.png' : 'icons/icon-dark-48x48.png',
+      );
       return;
     }
 
@@ -219,7 +301,10 @@ async function evaluateTab(tabId, url) {
 
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  if (tab?.url && (changeInfo.status === 'loading' || changeInfo.status === 'complete')) {
+  if (
+    tab?.url &&
+    (changeInfo.status === 'loading' || changeInfo.status === 'complete')
+  ) {
     await evaluateTab(tabId, tab.url);
   }
 });
@@ -253,16 +338,16 @@ chrome.action.onClicked.addListener(async (tab) => {
 });
 
 // Listen for when the active tab changes
-chrome.tabs.onActivated.addListener(async (activeInfo) => {
-  try {
-    const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab?.url) {
-      await evaluateTab(activeInfo.tabId, tab.url);
-    }
-  } catch (error) {
-    console.warn('Error in onActivated listener:', error);
-  }
-});
+// chrome.tabs.onActivated.addListener(async (activeInfo) => {
+//   try {
+//     const tab = await chrome.tabs.get(activeInfo.tabId);
+//     if (tab?.url) {
+//       await evaluateTab(activeInfo.tabId, tab.url);
+//     }
+//   } catch (error) {
+//     console.warn('Error in onActivated listener:', error);
+//   }
+// });
 
 // Initialize icons for already open tabs when the extension starts
 async function initializeTabs() {
