@@ -36,7 +36,7 @@ function removeLightTheme(tabId) {
  * @param {string} url - The URL of the tab.
  */
 async function evaluateAndApplyTheme(tabId, url) {
-  if (!tabId || !url) return;
+  if (!tabId || !url || !url.startsWith('http')) return;
 
   try {
     // Execute the content script to get both page and OS themes
@@ -67,9 +67,18 @@ async function evaluateAndApplyTheme(tabId, url) {
       removeLightTheme(tabId);
     }
   } catch (error) {
-    console.error('Error evaluating and applying theme:', error);
-    // Default to removing the theme on error
-    removeLightTheme(tabId);
+    // Ignore errors from attempting to inject scripts into restricted pages.
+    if (
+      error.message.includes('Cannot access a chrome:// URL') ||
+      error.message.includes('Cannot access contents of the page') ||
+      error.message.includes('The extensions gallery cannot be scripted')
+    ) {
+      // Known, expected errors on restricted pages.
+    } else {
+      console.error('Error evaluating and applying theme:', error);
+      // Default to removing the theme on other errors.
+      removeLightTheme(tabId);
+    }
   }
 }
 
@@ -77,21 +86,21 @@ async function evaluateAndApplyTheme(tabId, url) {
 
 // Re-evaluate theme when a tab is updated (e.g., page load)
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url) {
+  if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('http')) {
     evaluateAndApplyTheme(tabId, tab.url);
   }
 });
 
 // Re-evaluate theme on SPA navigations
 chrome.webNavigation.onHistoryStateUpdated.addListener((details) => {
-  if (details.frameId === 0 && details.url) {
+  if (details.frameId === 0 && details.url && details.url.startsWith('http')) {
     evaluateAndApplyTheme(details.tabId, details.url);
   }
 });
 
 // Toggle theme when the action button is clicked
 chrome.action.onClicked.addListener(async (tab) => {
-  if (!tab.id || !tab.url) return;
+  if (!tab.id || !tab.url || !tab.url.startsWith('http')) return;
 
   try {
     const url = new URL(tab.url);
@@ -117,13 +126,16 @@ chrome.action.onClicked.addListener(async (tab) => {
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab.url) {
+    if (tab.url && tab.url.startsWith('http')) {
       evaluateAndApplyTheme(activeInfo.tabId, tab.url);
     } else {
       removeLightTheme(activeInfo.tabId);
     }
   } catch (error) {
-    console.warn('Error in onActivated listener:', error);
+    // This can happen if the tab is closed before we can get it.
+    if (!error.message.includes('No tab with id')) {
+      console.warn('Error in onActivated listener:', error);
+    }
   }
 });
 
@@ -134,10 +146,8 @@ async function initializeActionIcons() {
   try {
     const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
     for (const tab of tabs) {
+      // The query ensures we only get tabs with http/https URLs.
       if (tab.id && tab.url) {
-        // We need to evaluate each tab individually.
-        // This is a simplified check; a full evaluation might be too heavy on startup.
-        // Let's just set the default icon, and the active tab will be updated anyway.
         evaluateAndApplyTheme(tab.id, tab.url);
       }
     }
