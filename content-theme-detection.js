@@ -97,9 +97,16 @@ function analyzePageTheme() {
 }
 
 // --- Main execution ---
-try {
-  const detectedTheme = analyzePageTheme();
-  console.log('Detected page theme:', detectedTheme);
-} catch (error) {
-  console.error('Error detecting page theme:', error);
-}
+// This script is designed to be executed by chrome.scripting.executeScript,
+// so it needs to return the result. We wrap the logic in a self-executing
+// anonymous function that returns the detected theme.
+(() => {
+  try {
+    const detectedTheme = analyzePageTheme();
+    return detectedTheme;
+  } catch (error) {
+    console.error('Error detecting page theme:', error);
+    // Return a default value in case of an error
+    return 'light';
+  }
+})();
