@@ -45,7 +45,11 @@ async function evaluateAndApplyTheme(tabId, url) {
       files: ['content-theme-detection.js'],
     });
 
-    if (!injectionResults || !injectionResults[0] || !injectionResults[0].result) {
+    if (
+      !injectionResults ||
+      !injectionResults[0] ||
+      !injectionResults[0].result
+    ) {
       throw new Error('Could not get theme info from content script.');
     }
 
@@ -86,7 +90,11 @@ async function evaluateAndApplyTheme(tabId, url) {
 
 // Re-evaluate theme when a tab is updated (e.g., page load)
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === 'complete' && tab.url && tab.url.startsWith('http')) {
+  if (
+    changeInfo.status === 'complete' &&
+    tab.url &&
+    tab.url.startsWith('http')
+  ) {
     evaluateAndApplyTheme(tabId, tab.url);
   }
 });
@@ -126,11 +134,10 @@ chrome.action.onClicked.addListener(async (tab) => {
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (tab.url && tab.url.startsWith('http')) {
-      evaluateAndApplyTheme(activeInfo.tabId, tab.url);
-    } else {
-      removeLightTheme(activeInfo.tabId);
+    if (!tab.url || !tab.url.startsWith('http')) {
+      return;
     }
+    evaluateAndApplyTheme(activeInfo.tabId, tab.url);
   } catch (error) {
     // This can happen if the tab is closed before we can get it.
     if (!error.message.includes('No tab with id')) {
@@ -144,7 +151,9 @@ chrome.tabs.onActivated.addListener(async (activeInfo) => {
  */
 async function initializeActionIcons() {
   try {
-    const tabs = await chrome.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+    const tabs = await chrome.tabs.query({
+      url: ['http://*/*', 'https://*/*'],
+    });
     for (const tab of tabs) {
       // The query ensures we only get tabs with http/https URLs.
       if (tab.id && tab.url) {
