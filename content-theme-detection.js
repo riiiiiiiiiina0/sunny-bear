@@ -99,14 +99,17 @@ function analyzePageTheme() {
 // --- Main execution ---
 // This script is designed to be executed by chrome.scripting.executeScript,
 // so it needs to return the result. We wrap the logic in a self-executing
-// anonymous function that returns the detected theme.
+// anonymous function that returns both the detected page theme and the OS theme.
 (() => {
   try {
-    const detectedTheme = analyzePageTheme();
-    return detectedTheme;
+    const pageTheme = analyzePageTheme();
+    const osTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+    return { pageTheme, osTheme };
   } catch (error) {
-    console.error('Error detecting page theme:', error);
+    console.error('Error detecting themes:', error);
     // Return a default value in case of an error
-    return 'light';
+    return { pageTheme: 'light', osTheme: 'light' };
   }
 })();

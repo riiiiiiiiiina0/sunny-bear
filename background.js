@@ -38,31 +38,28 @@ function removeLightTheme(tabId) {
 async function evaluateAndApplyTheme(tabId, url) {
   if (!tabId || !url) return;
 
-  const osThemeIsDark = window.matchMedia(
-    '(prefers-color-scheme: dark)'
-  ).matches;
-
-  if (osThemeIsDark) {
-    // Per user instruction, if OS theme is dark, do nothing (remove theme).
-    removeLightTheme(tabId);
-    return;
-  }
-
-  // OS theme is light, proceed with the two checks.
   try {
-    // Condition 1: Check if the URL is in the stored list.
-    const urls = await getUrls();
-    const urlIsInList = urls.some((u) => url.startsWith(u));
-
-    // Condition 2: Detect the page's theme.
+    // Execute the content script to get both page and OS themes
     const injectionResults = await chrome.scripting.executeScript({
       target: { tabId },
       files: ['content-theme-detection.js'],
     });
 
-    // The result is in the first element of the array
-    const pageTheme =
-      injectionResults && injectionResults[0] ? injectionResults[0].result : 'light';
+    if (!injectionResults || !injectionResults[0] || !injectionResults[0].result) {
+      throw new Error('Could not get theme info from content script.');
+    }
+
+    const { pageTheme, osTheme } = injectionResults[0].result;
+
+    if (osTheme === 'dark') {
+      // Per user instruction, if OS theme is dark, do nothing (remove theme).
+      removeLightTheme(tabId);
+      return;
+    }
+
+    // OS theme is 'light', so proceed with the checks.
+    const urls = await getUrls();
+    const urlIsInList = urls.some((u) => url.startsWith(u));
 
     if (urlIsInList || pageTheme === 'dark') {
       applyLightTheme(tabId);
