@@ -66,6 +66,15 @@ async function updateBadgeForTab(url, tabId) {
 
 // Listen for tab updates
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // Inject theme detection script on page load
+  if (changeInfo.status === 'complete' && tab.url) {
+    chrome.scripting
+      .executeScript({
+        target: { tabId: tabId },
+        files: ['content-theme-detection.js'],
+      })
+      .catch((error) => console.error('Failed to inject theme script:', error));
+  }
   // Process when a URL has loaded or is loading, or title changes (good proxy for SPA nav)
   if (
     tab.url &&

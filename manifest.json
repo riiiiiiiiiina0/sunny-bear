@@ -32,7 +32,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "storage.js"
+        "storage.js",
+        "content-theme-detection.js"
       ],
       "matches": [
         "<all_urls>"
