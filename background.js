@@ -2,7 +2,7 @@
  * Background service worker for the Sunny Bear extension
  */
 
-import { getUrls, addUrl, deleteUrl } from './storage.js';
+import { getUrls, addUrl, deleteUrl, getExcludeUrls } from './storage.js';
 
 /**
  * Apply light theme to the current tab and set the action icon to light.
@@ -62,6 +62,13 @@ async function evaluateAndApplyTheme(tabId, url) {
     }
 
     // OS theme is 'light', so proceed with the checks.
+    const excludeUrls = await getExcludeUrls();
+    const urlIsInExcludeList = excludeUrls.some((u) => url.startsWith(u));
+
+    if (urlIsInExcludeList) {
+      return;
+    }
+
     const urls = await getUrls();
     const urlIsInList = urls.some((u) => url.startsWith(u));
 
