@@ -84,6 +84,41 @@
 
       <div class="card bg-base-200 shadow-lg">
         <div class="card-body">
+          <h2 class="card-title text-2xl mb-4">Exclude List</h2>
+          <div class="flex gap-3 items-end">
+            <div class="form-control flex-1">
+              <label class="label">
+                <span class="label-text">Enter URL to Exclude</span>
+              </label>
+              <input type="url" id="exclude-url-value" placeholder="https://example.com" class="input w-full"
+                required>
+            </div>
+            <button id="add-exclude-btn" class="btn btn-warning">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+              Add to Exclude List
+            </button>
+          </div>
+          <div class="overflow-x-auto rounded-lg bg-base-100 mt-4">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th class="text-left">URL</th>
+                  <th class="text-center" width="120">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="exclude-url-list">
+                <!-- Exclude URL list will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card bg-base-200 shadow-lg">
+        <div class="card-body">
           <div class="flex items-center gap-3 mb-4">
             <h3 class="text-xl font-semibold">Storage Information</h3>
             <button id="refresh-quota" class="btn btn-ghost btn-sm" title="Refresh storage info">

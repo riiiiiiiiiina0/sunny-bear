@@ -1,4 +1,12 @@
-import { getUrls, addUrl, deleteUrl, updateUrl } from './storage.js';
+import {
+  getUrls,
+  addUrl,
+  deleteUrl,
+  updateUrl,
+  getExcludeUrls,
+  addExcludeUrl,
+  deleteExcludeUrl,
+} from './storage.js';
 
 document.addEventListener('DOMContentLoaded', function () {
   // Elements - Using non-null assertions with casting for TypeScript checking
@@ -13,6 +21,18 @@ document.addEventListener('DOMContentLoaded', function () {
   // @ts-ignore
   const urlList = /** @type {HTMLElement} */ (
     document.getElementById('url-list')
+  );
+  // @ts-ignore
+  const excludeUrlValueInput = /** @type {HTMLInputElement} */ (
+    document.getElementById('exclude-url-value')
+  );
+  // @ts-ignore
+  const addExcludeBtn = /** @type {HTMLButtonElement} */ (
+    document.getElementById('add-exclude-btn')
+  );
+  // @ts-ignore
+  const excludeUrlList = /** @type {HTMLElement} */ (
+    document.getElementById('exclude-url-list')
   );
   // @ts-ignore
   const editDialog = /** @type {HTMLDialogElement} */ (
@@ -57,9 +77,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Store URLs locally to avoid multiple storage calls
   let urls = [];
+  let excludeUrls = [];
 
   // Load stored URLs
   loadUrls();
+  loadExcludeUrls();
 
   // Get and display storage quota information
   displayStorageQuota();
@@ -301,6 +323,104 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  async function loadExcludeUrls() {
+    // Get URLs from storage
+    excludeUrls = await getExcludeUrls();
+    console.log(excludeUrls);
+    renderExcludeUrls();
+  }
+
+  // Render Exclude URLs
+  function renderExcludeUrls() {
+    excludeUrlList.innerHTML = '';
+
+    if (excludeUrls.length === 0) {
+      excludeUrlList.innerHTML = `
+        <tr>
+          <td colspan="2" class="text-center text-base-content/70 py-8">
+            <div class="flex flex-col items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span class="text-lg">No URLs excluded yet</span>
+              <span class="text-sm">Add a URL to the exclude list above</span>
+            </div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
+    excludeUrls.forEach((url, index) => {
+      const tr = document.createElement('tr');
+      tr.className = 'hover transition-colors duration-200 group';
+      tr.innerHTML = `
+        <td class="font-mono text-sm">
+          <a href="${url}" target="_blank" class="link link-primary hover:link-secondary break-all">
+            ${url}
+          </a>
+        </td>
+        <td class="text-center">
+          <div class="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button class="btn btn-sm btn-outline btn-error delete-exclude-btn" data-index="${index}">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Delete
+            </button>
+          </div>
+        </td>
+      `;
+      excludeUrlList.appendChild(tr);
+    });
+
+    // Attach event listeners to buttons
+    document.querySelectorAll('.delete-exclude-btn').forEach((btn) => {
+      btn.addEventListener('click', handleDeleteExclude);
+    });
+  }
+
+  // Add new Exclude URL
+  async function handleAddExclude() {
+    const url = excludeUrlValueInput.value.trim();
+
+    if (!url) {
+      alert('Please enter a valid URL');
+      return;
+    }
+
+    const success = await addExcludeUrl(url);
+
+    if (success) {
+      // Reload URLs from storage
+      await loadExcludeUrls();
+      // Update storage quota display
+      displayStorageQuota();
+
+      // Clear input
+      excludeUrlValueInput.value = '';
+    } else {
+      alert('URL already exists or is invalid');
+    }
+  }
+
+  // Delete Exclude URL
+  async function handleDeleteExclude(e) {
+    if (confirm('Are you sure you want to delete this excluded URL?')) {
+      const index = e.target.dataset.index;
+      const url = excludeUrls[index];
+
+      const success = await deleteExcludeUrl(url);
+
+      if (success) {
+        // Reload URLs from storage
+        await loadExcludeUrls();
+        // Update storage quota display
+        displayStorageQuota();
+      }
+    }
+  }
+
   // Event listeners
   addBtn.addEventListener('click', handleAdd);
   saveBtn.addEventListener('click', handleSave);
@@ -309,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function () {
   importBtn.addEventListener('click', handleImportClick);
   fileInput.addEventListener('change', handleFileSelect);
   refreshQuotaBtn.addEventListener('click', displayStorageQuota);
+  addExcludeBtn.addEventListener('click', handleAddExclude);
 
   /**
    * Get and display Chrome storage quota information

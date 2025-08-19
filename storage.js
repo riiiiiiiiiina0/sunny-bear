@@ -5,6 +5,7 @@
 
 // Key used to store URLs in chrome.storage.sync
 const STORAGE_KEY = 'light_theme_urls';
+const EXCLUDE_STORAGE_KEY = 'light_theme_exclude_urls';
 
 /**
  * Sort URLs alphabetically (case-insensitive)
@@ -147,4 +148,82 @@ function clearUrls() {
   });
 }
 
-export { getUrls, addUrl, deleteUrl, updateUrl, clearUrls };
+/**
+ * Get all stored exclude URLs
+ * @returns {Promise<Array<string>>} Array of stored URLs
+ */
+function getExcludeUrls() {
+  return new Promise((resolve) => {
+    chrome.storage.sync.get(EXCLUDE_STORAGE_KEY, (result) => {
+      const urls = result[EXCLUDE_STORAGE_KEY] || [];
+      // filter out invalid URLs
+      const validUrls = urls.filter(isValidUrl);
+      // Ensure URLs are always returned in alphabetical order
+      resolve(sortUrls(validUrls));
+    });
+  });
+}
+
+/**
+ * Add a new URL to exclude list
+ * @param {string} url - URL to add
+ * @returns {Promise<boolean>} Success status
+ */
+function addExcludeUrl(url) {
+  return new Promise((resolve) => {
+    if (!isValidUrl(url)) {
+      console.error(`Invalid URL provided: ${url}`);
+      resolve(false);
+      return;
+    }
+
+    getExcludeUrls().then((urls) => {
+      // Check if URL already exists to avoid duplicates
+      if (urls.includes(url)) {
+        resolve(false);
+        return;
+      }
+
+      urls.push(url);
+      // Sort URLs alphabetically before saving
+      sortUrls(urls);
+      chrome.storage.sync.set({ [EXCLUDE_STORAGE_KEY]: urls }, () => {
+        resolve(true);
+      });
+    });
+  });
+}
+
+/**
+ * Delete a URL from exclude list
+ * @param {string} url - URL to delete
+ * @returns {Promise<boolean>} Success status
+ */
+function deleteExcludeUrl(url) {
+  return new Promise((resolve) => {
+    getExcludeUrls().then((urls) => {
+      const index = urls.indexOf(url);
+
+      if (index === -1) {
+        resolve(false);
+        return;
+      }
+
+      urls.splice(index, 1);
+      chrome.storage.sync.set({ [EXCLUDE_STORAGE_KEY]: urls }, () => {
+        resolve(true);
+      });
+    });
+  });
+}
+
+export {
+  getUrls,
+  addUrl,
+  deleteUrl,
+  updateUrl,
+  clearUrls,
+  getExcludeUrls,
+  addExcludeUrl,
+  deleteExcludeUrl,
+};
