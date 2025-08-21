@@ -423,6 +423,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Event listeners
   addBtn.addEventListener('click', handleAdd);
+
+  urlValueInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      handleAdd();
+    }
+  });
+
   saveBtn.addEventListener('click', handleSave);
   cancelBtn.addEventListener('click', handleCancel);
   exportBtn.addEventListener('click', handleExport);
@@ -430,6 +437,12 @@ document.addEventListener('DOMContentLoaded', function () {
   fileInput.addEventListener('change', handleFileSelect);
   refreshQuotaBtn.addEventListener('click', displayStorageQuota);
   addExcludeBtn.addEventListener('click', handleAddExclude);
+
+  excludeUrlValueInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      handleAddExclude();
+    }
+  });
 
   /**
    * Get and display Chrome storage quota information
