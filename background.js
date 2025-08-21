@@ -2,7 +2,13 @@
  * Background service worker for the Sunny Bear extension
  */
 
-import { getUrls, addUrl, deleteUrl, getExcludeUrls } from './storage.js';
+import {
+  getUrls,
+  addUrl,
+  deleteUrl,
+  getExcludeUrls,
+  addExcludeUrl,
+} from './storage.js';
 
 /**
  * Apply light theme to the current tab and set the action icon to light.
@@ -118,22 +124,36 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id || !tab.url || !tab.url.startsWith('http')) return;
 
   try {
+    // 1. Detect the theme of the current page
+    const injectionResults = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content-theme-detection.js'],
+    });
+
+    if (
+      !injectionResults ||
+      !injectionResults[0] ||
+      !injectionResults[0].result
+    ) {
+      throw new Error('Could not get theme info from content script.');
+    }
+
+    const { pageTheme } = injectionResults[0].result;
     const url = new URL(tab.url);
     const origin = url.origin;
-    const urls = await getUrls();
-    const originExists = urls.some((existingUrl) => existingUrl === origin);
 
-    if (originExists) {
-      await deleteUrl(origin);
-      // After toggling, re-evaluate the theme for the tab
-      evaluateAndApplyTheme(tab.id, tab.url);
+    // 2. Based on the theme, perform the required action
+    if (pageTheme === 'dark') {
+      // If the page is dark, add to exclude list and remove the theme
+      await addExcludeUrl(origin);
+      removeLightTheme(tab.id);
     } else {
+      // If the page is light, add to the stored URL list and apply the theme
       await addUrl(origin);
-      // After adding to the list, the theme should be applied immediately
       applyLightTheme(tab.id);
     }
   } catch (error) {
-    console.error('Error toggling URL:', error);
+    console.error('Error handling action click:', error);
   }
 });
 
