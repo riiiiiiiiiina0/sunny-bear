@@ -8,6 +8,7 @@ import {
   deleteUrl,
   getExcludeUrls,
   addExcludeUrl,
+  deleteExcludeUrl,
 } from './storage.js';
 
 /**
@@ -124,7 +125,28 @@ chrome.action.onClicked.addListener(async (tab) => {
   if (!tab.id || !tab.url || !tab.url.startsWith('http')) return;
 
   try {
-    // 1. Detect the theme of the current page
+    const url = new URL(tab.url);
+    const origin = url.origin;
+
+    const urls = await getUrls();
+    const excludeUrls = await getExcludeUrls();
+
+    const inMainList = urls.includes(origin);
+    const inExcludeList = excludeUrls.includes(origin);
+
+    // Rule 0: If the URL is in either list, remove it and toggle the theme.
+    if (inMainList) {
+      await deleteUrl(origin);
+      removeLightTheme(tab.id);
+      return;
+    }
+    if (inExcludeList) {
+      await deleteExcludeUrl(origin);
+      applyLightTheme(tab.id); // Toggle on
+      return;
+    }
+
+    // If we're here, the URL is not in any list. Proceed with theme detection.
     const injectionResults = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: ['content-theme-detection.js'],
@@ -139,17 +161,16 @@ chrome.action.onClicked.addListener(async (tab) => {
     }
 
     const { pageTheme } = injectionResults[0].result;
-    const url = new URL(tab.url);
-    const origin = url.origin;
 
-    // 2. Based on the theme, perform the required action
+    // Rule 1 & 2: Based on the theme, add to the correct list.
+    // Rule 3 (Exclusivity) is handled by deleting from the other list.
     if (pageTheme === 'dark') {
-      // If the page is dark, add to exclude list and remove the theme
       await addExcludeUrl(origin);
+      await deleteUrl(origin); // Ensure exclusivity
       removeLightTheme(tab.id);
     } else {
-      // If the page is light, add to the stored URL list and apply the theme
       await addUrl(origin);
+      await deleteExcludeUrl(origin); // Ensure exclusivity
       applyLightTheme(tab.id);
     }
   } catch (error) {
