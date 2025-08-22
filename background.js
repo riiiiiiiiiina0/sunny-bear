@@ -45,6 +45,9 @@ function removeLightTheme(tabId) {
 async function evaluateAndApplyTheme(tabId, url) {
   if (!tabId || !url || !url.startsWith('http')) return;
 
+  // wait a bit to make sure the page is loaded
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
   try {
     // Execute the content script to get both page and OS themes
     const injectionResults = await chrome.scripting.executeScript({
