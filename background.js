@@ -131,22 +131,22 @@ chrome.action.onClicked.addListener(async (tab) => {
     const urls = await getUrls();
     const excludeUrls = await getExcludeUrls();
 
-    const inMainList = urls.includes(origin);
-    const inExcludeList = excludeUrls.includes(origin);
+    const mainListMatch = urls.find((u) => tab.url.startsWith(u));
+    const excludeListMatch = excludeUrls.find((u) => tab.url.startsWith(u));
 
-    // Rule 0: If the URL is in either list, remove it and toggle the theme.
-    if (inMainList) {
-      await deleteUrl(origin);
+    // Rule 0: If a prefix of the current URL is in either list, remove it and toggle.
+    if (mainListMatch) {
+      await deleteUrl(mainListMatch);
       removeLightTheme(tab.id);
       return;
     }
-    if (inExcludeList) {
-      await deleteExcludeUrl(origin);
+    if (excludeListMatch) {
+      await deleteExcludeUrl(excludeListMatch);
       applyLightTheme(tab.id); // Toggle on
       return;
     }
 
-    // If we're here, the URL is not in any list. Proceed with theme detection.
+    // If we're here, no prefix of the URL is in any list. Proceed with theme detection.
     const injectionResults = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
       files: ['content-theme-detection.js'],
@@ -162,15 +162,14 @@ chrome.action.onClicked.addListener(async (tab) => {
 
     const { pageTheme } = injectionResults[0].result;
 
-    // Rule 1 & 2: Based on the theme, add to the correct list.
-    // Rule 3 (Exclusivity) is handled by deleting from the other list.
+    // Add the new origin and ensure exclusivity.
     if (pageTheme === 'dark') {
       await addExcludeUrl(origin);
-      await deleteUrl(origin); // Ensure exclusivity
+      await deleteUrl(origin); // Ensure origin is not in the other list.
       removeLightTheme(tab.id);
     } else {
       await addUrl(origin);
-      await deleteExcludeUrl(origin); // Ensure exclusivity
+      await deleteExcludeUrl(origin); // Ensure origin is not in the other list.
       applyLightTheme(tab.id);
     }
   } catch (error) {
