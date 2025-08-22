@@ -12,10 +12,7 @@ function getElementBackgroundColor(element) {
   let bgColor = style.backgroundColor;
 
   let currentElement = element;
-  while (
-    bgColor === 'rgba(0, 0, 0, 0)' ||
-    bgColor === 'transparent'
-  ) {
+  while (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {
     currentElement = currentElement.parentElement;
     if (!currentElement) {
       return 'rgb(255, 255, 255)'; // Default to white if we reach the top
@@ -72,8 +69,12 @@ function analyzePageTheme() {
   const elementsToCheck = [
     document.body,
     document.documentElement,
-    ...Array.from(document.querySelectorAll('div, main, header, section, article, nav')),
-  ].filter(Boolean).slice(0, 20); // Limit samples for performance
+    ...Array.from(
+      document.querySelectorAll('div, main, header, section, article, nav'),
+    ),
+  ]
+    .filter(Boolean)
+    .slice(0, 20); // Limit samples for performance
 
   let lightPixels = 0;
   let darkPixels = 0;
@@ -83,7 +84,8 @@ function analyzePageTheme() {
     const rect = element.getBoundingClientRect();
     const area = rect.width * rect.height;
 
-    if (area > 0) { // Only consider visible elements with some area
+    if (area > 0) {
+      // Only consider visible elements with some area
       if (isLightColor(bgColor)) {
         lightPixels += area;
       } else {
@@ -106,6 +108,9 @@ function analyzePageTheme() {
     const osTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
+    console.log(
+      `[theme-detection] pageTheme: ${pageTheme}, osTheme: ${osTheme}`,
+    );
     return { pageTheme, osTheme };
   } catch (error) {
     console.error('Error detecting themes:', error);

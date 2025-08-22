@@ -2,7 +2,14 @@
  * Background service worker for the Sunny Bear extension
  */
 
-import { getUrls, addUrl, deleteUrl, getExcludeUrls } from './storage.js';
+import {
+  getUrls,
+  addUrl,
+  deleteUrl,
+  getExcludeUrls,
+  addExcludeUrl,
+  deleteExcludeUrl,
+} from './storage.js';
 
 /**
  * Apply light theme to the current tab and set the action icon to light.
@@ -37,6 +44,9 @@ function removeLightTheme(tabId) {
  */
 async function evaluateAndApplyTheme(tabId, url) {
   if (!tabId || !url || !url.startsWith('http')) return;
+
+  // wait a bit to make sure the page is loaded
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
   try {
     // Execute the content script to get both page and OS themes
@@ -120,20 +130,53 @@ chrome.action.onClicked.addListener(async (tab) => {
   try {
     const url = new URL(tab.url);
     const origin = url.origin;
-    const urls = await getUrls();
-    const originExists = urls.some((existingUrl) => existingUrl === origin);
 
-    if (originExists) {
-      await deleteUrl(origin);
-      // After toggling, re-evaluate the theme for the tab
-      evaluateAndApplyTheme(tab.id, tab.url);
+    const urls = await getUrls();
+    const excludeUrls = await getExcludeUrls();
+
+    const mainListMatch = urls.find((u) => tab.url.startsWith(u));
+    const excludeListMatch = excludeUrls.find((u) => tab.url.startsWith(u));
+
+    // Rule 0: If a prefix of the current URL is in either list, remove it and toggle.
+    if (mainListMatch) {
+      await deleteUrl(mainListMatch);
+      removeLightTheme(tab.id);
+      return;
+    }
+    if (excludeListMatch) {
+      await deleteExcludeUrl(excludeListMatch);
+      applyLightTheme(tab.id); // Toggle on
+      return;
+    }
+
+    // If we're here, no prefix of the URL is in any list. Proceed with theme detection.
+    const injectionResults = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      files: ['content-theme-detection.js'],
+    });
+
+    if (
+      !injectionResults ||
+      !injectionResults[0] ||
+      !injectionResults[0].result
+    ) {
+      throw new Error('Could not get theme info from content script.');
+    }
+
+    const { pageTheme } = injectionResults[0].result;
+
+    // Add the new origin and ensure exclusivity.
+    if (pageTheme === 'dark') {
+      await addExcludeUrl(origin);
+      await deleteUrl(origin); // Ensure origin is not in the other list.
+      removeLightTheme(tab.id);
     } else {
       await addUrl(origin);
-      // After adding to the list, the theme should be applied immediately
+      await deleteExcludeUrl(origin); // Ensure origin is not in the other list.
       applyLightTheme(tab.id);
     }
   } catch (error) {
-    console.error('Error toggling URL:', error);
+    console.error('Error handling action click:', error);
   }
 });
 
