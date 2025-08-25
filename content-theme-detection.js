@@ -65,7 +65,29 @@ function isLightColor(rgbString) {
  * Analyzes the page to determine if its theme is light or dark.
  * @returns {string} 'light' or 'dark'.
  */
+function isImagePage() {
+  return (
+    location.href.endsWith('.jpg') ||
+    location.href.endsWith('.jpeg') ||
+    location.href.endsWith('.png')
+  );
+}
+
+function isPDFPage() {
+  return (
+    location.href.endsWith('.pdf') ||
+    (document.body.children.length === 1 &&
+      document.body.children[0].tagName === 'EMBED' &&
+      document.body.children[0].type === 'application/pdf')
+  );
+}
+
 function analyzePageTheme() {
+  // When auto detecting page theme, we should consider all PDF pages are in light theme.
+  if (isPDFPage() || isImagePage()) {
+    return 'light';
+  }
+
   const elementsToCheck = [
     document.body,
     document.documentElement,
