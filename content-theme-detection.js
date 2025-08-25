@@ -66,6 +66,16 @@ function isLightColor(rgbString) {
  * @returns {string} 'light' or 'dark'.
  */
 function analyzePageTheme() {
+  // When auto detecting page theme, we should consider all PDF pages are in light theme.
+  if (
+    location.href.endsWith('.pdf') ||
+    (document.body.children.length === 1 &&
+      document.body.children[0].tagName === 'EMBED' &&
+      document.body.children[0].type === 'application/pdf')
+  ) {
+    return 'light';
+  }
+
   const elementsToCheck = [
     document.body,
     document.documentElement,
