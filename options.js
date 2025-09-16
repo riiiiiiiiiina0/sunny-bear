@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function () {
   async function loadUrls() {
     // Get URLs from storage
     urls = await getUrls();
-    console.log(urls);
     renderUrls();
   }
 
@@ -326,7 +325,6 @@ document.addEventListener('DOMContentLoaded', function () {
   async function loadExcludeUrls() {
     // Get URLs from storage
     excludeUrls = await getExcludeUrls();
-    console.log(excludeUrls);
     renderExcludeUrls();
   }
 

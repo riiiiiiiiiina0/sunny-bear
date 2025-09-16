@@ -130,9 +130,6 @@ function analyzePageTheme() {
     const osTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
       ? 'dark'
       : 'light';
-    console.log(
-      `[theme-detection] pageTheme: ${pageTheme}, osTheme: ${osTheme}`,
-    );
     return { pageTheme, osTheme };
   } catch (error) {
     console.error('Error detecting themes:', error);

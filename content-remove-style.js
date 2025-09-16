@@ -4,8 +4,6 @@
  */
 
 (function () {
-  console.log('Light Theme removal script running');
-
   // Remove the light theme styles
   removeLightThemeStyles();
 

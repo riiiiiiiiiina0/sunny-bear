@@ -8,8 +8,6 @@
     return;
   }
 
-  console.log('Light Theme content script running');
-
   // Global variables for cleanup
   let mutationObserver = null;
   let processedElements = new Set();
@@ -49,7 +47,10 @@
    * Find all elements with background-image style and apply CSS filter
    */
   function applyBackgroundImageFilters() {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    if (
+      window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+    ) {
       return;
     }
     // Find elements with inline background-image styles
@@ -94,7 +95,10 @@
     // If an observer already exists from a previous execution of this content script
     // (e.g. due to SPA navigation re-triggering without full page reload),
     // disconnect it before creating a new one.
-    if (window['lightThemeExtension'] && window['lightThemeExtension'].observer) {
+    if (
+      window['lightThemeExtension'] &&
+      window['lightThemeExtension'].observer
+    ) {
       window['lightThemeExtension'].observer.disconnect();
       // We can also clear processedElements if we want a fresh start,
       // but existing processedElements set should still be valid.
