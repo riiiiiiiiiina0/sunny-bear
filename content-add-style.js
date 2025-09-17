@@ -31,7 +31,7 @@
   function injectLightThemeCSS() {
     const css = `
       @media (prefers-color-scheme: light) {
-        html, img, video, [style*="background-image"], iframe {
+        html, img, video, canvas, [style*="background-image"], iframe {
           filter: invert(1) hue-rotate(180deg);
         }
       }
