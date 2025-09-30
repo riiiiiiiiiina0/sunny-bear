@@ -3,7 +3,6 @@
  * This script converts dark themed websites to light theme
  */
 (function () {
-  // A flag to indicate that the script is running and to avoid re-injection.
   if (document.documentElement.getAttribute('data-sunny-bear-active') === 'true') {
     return;
   }
@@ -13,57 +12,46 @@
   let mutationObserver = null;
   let applyFiltersTimeout = null;
 
-  function applyFilterToElement(element) {
-    // If the element is part of a subtree that we've decided to skip, do nothing.
-    if (element.closest('[data-sunny-bear-ignore]')) {
-      return;
-    }
-
-    const computedStyle = window.getComputedStyle(element);
-    // If a filter is already applied (by CSS or inline style), we'll respect it and not apply our own.
-    // We mark this element's subtree as 'ignored' to prevent our filters from being applied to its children.
-    if (computedStyle.filter !== 'none') {
-      element.setAttribute('data-sunny-bear-ignore', 'true');
-      return;
-    }
-
-    // Exclude specific elements if they have a class of 'sunny-bear-excluded'
-    if (element.classList.contains('sunny-bear-excluded')) {
-      return;
-    }
-
-    // Apply our filter. We combine it with any existing inline filter.
-    const originalFilter = element.style.filter || '';
-    const newFilter = originalFilter ? `${originalFilter} ${lightThemeFilter}` : lightThemeFilter;
-    element.style.filter = newFilter;
-
-    // Mark the element as filtered by our extension.
-    element.setAttribute('data-light-theme-filtered', 'true');
-  }
-
-  function applyFiltersToAll() {
+  function applyFilters() {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return;
     }
 
-    // The elements we want to apply our filter to.
-    const selectors = [
-      'html',
-      'img',
-      'video',
-      'canvas',
-      'iframe',
-    ];
+    // Apply the main filter to the html element to invert the entire page.
+    const htmlElement = document.documentElement;
+    if (!htmlElement.style.filter.includes(lightThemeFilter)) {
+      const originalFilter = htmlElement.style.filter || '';
+      htmlElement.style.filter = originalFilter ? `${originalFilter} ${lightThemeFilter}` : lightThemeFilter;
+      htmlElement.setAttribute('data-light-theme-filtered', 'true');
+    }
 
-    // Apply filters to the main elements.
-    document.querySelectorAll(selectors.join(',')).forEach(applyFilterToElement);
-
-    // Additionally, find any element with a background image and apply the filter.
-    // We check all elements for this.
+    // Now, iterate through elements that need to be "un-inverted" to appear correctly.
     document.querySelectorAll('*').forEach(element => {
+      // No need to process the html element itself.
+      if (element === htmlElement) {
+        return;
+      }
+
       const computedStyle = window.getComputedStyle(element);
-      if (computedStyle.backgroundImage && computedStyle.backgroundImage.startsWith('url(')) {
-        applyFilterToElement(element);
+
+      // Condition 1: It's an image, video, or similar element that should always be visible.
+      const isMediaElement = ['IMG', 'VIDEO', 'CANVAS', 'IFRAME'].includes(element.tagName);
+      const hasBackgroundImage = computedStyle.backgroundImage && computedStyle.backgroundImage.startsWith('url(');
+
+      // Condition 2: It's a non-media element that has its own filter we need to preserve.
+      const hasExistingFilter = computedStyle.filter !== 'none';
+
+      // If either condition is met, apply the corrective filter.
+      if (isMediaElement || hasBackgroundImage || hasExistingFilter) {
+        const originalElementFilter = element.style.filter || '';
+        // Only add the filter if it's not already there.
+        if (!originalElementFilter.includes(lightThemeFilter)) {
+          const newFilter = originalElementFilter
+            ? `${originalElementFilter} ${lightThemeFilter}`
+            : lightThemeFilter;
+          element.style.filter = newFilter;
+          element.setAttribute('data-light-theme-filtered', 'true');
+        }
       }
     });
   }
@@ -75,7 +63,7 @@
 
     mutationObserver = new MutationObserver(() => {
       clearTimeout(applyFiltersTimeout);
-      applyFiltersTimeout = setTimeout(applyFiltersToAll, 500);
+      applyFiltersTimeout = setTimeout(applyFilters, 500);
     });
 
     mutationObserver.observe(document.body, {
@@ -88,7 +76,6 @@
     window.lightThemeExtension = { observer: mutationObserver };
   }
 
-  // Initial application of filters and observer setup.
-  applyFiltersToAll();
+  applyFilters();
   setupDOMObserver();
 })();
