@@ -11,7 +11,7 @@
   // Global variables for cleanup
   let mutationObserver = null;
   let processedElements = new Set();
-  let applyBackgroundImageFiltersTimeout = 0;
+  let applySelectiveFiltersTimeout = 0;
 
   // Apply light theme conversion
   applyLightTheme();
@@ -21,7 +21,7 @@
    */
   function applyLightTheme() {
     injectLightThemeCSS();
-    applyBackgroundImageFilters();
+    applySelectiveFilters();
     setupDOMObserver();
   }
 
@@ -31,7 +31,7 @@
   function injectLightThemeCSS() {
     const css = `
       @media (prefers-color-scheme: light) {
-        html, img, video, canvas, [style*="background-image"], iframe, .sunny-bear-excluded {
+        html, .sunny-bear-excluded {
           filter: invert(1) hue-rotate(180deg);
         }
       }
@@ -44,41 +44,43 @@
   }
 
   /**
-   * Find all elements with background-image style and apply CSS filter
+   * Find all elements that should be exempt from the theme and apply a reverse filter.
+   * This includes images, videos, and elements with background images.
+   * It will not apply filters to elements that already have a filter property.
    */
-  function applyBackgroundImageFilters() {
+  function applySelectiveFilters() {
     if (
       window.matchMedia &&
       window.matchMedia('(prefers-color-scheme: dark)').matches
     ) {
       return;
     }
-    // Find elements with inline background-image styles
-    const elementsWithBgImage = document.querySelectorAll('*');
+    // Query all elements to check for background images, as well as specific media types
+    const allElements = document.querySelectorAll('*');
 
-    elementsWithBgImage.forEach((element) => {
+    allElements.forEach((element) => {
       if (processedElements.has(element)) return;
 
-      // ignore anchor tags
+      // Ignore anchor tags
       if (element.tagName === 'A') return;
 
       const computedStyle = window.getComputedStyle(element);
-      const backgroundImage = computedStyle.backgroundImage;
+      const existingFilter = computedStyle.filter;
 
-      // Check if element has background-image (excluding 'none')
-      if (backgroundImage && backgroundImage.startsWith('url(')) {
-        // Check if element is HTMLElement and has style property
+      // If a filter is already applied, skip this element to avoid conflicts
+      if (existingFilter && existingFilter !== 'none') {
+        return;
+      }
+
+      const isMediaType = ['IMG', 'VIDEO', 'CANVAS'].includes(element.tagName);
+      const hasBackgroundImage =
+        computedStyle.backgroundImage &&
+        computedStyle.backgroundImage.startsWith('url(');
+
+      if (isMediaType || hasBackgroundImage) {
         if (element instanceof HTMLElement) {
-          // Apply filter to the element
-          const originalFilter = element.style.filter || '';
-          const lightThemeFilter = 'invert(1) hue-rotate(180deg)';
-
-          // Combine existing filter with our light theme filter
-          const newFilter = originalFilter
-            ? `${originalFilter} ${lightThemeFilter}`
-            : lightThemeFilter;
-
-          element.style.filter = newFilter;
+          // Apply the reverse filter to cancel out the html-level filter
+          element.style.filter = 'invert(1) hue-rotate(180deg)';
           element.setAttribute('data-light-theme-filtered', 'true');
           processedElements.add(element);
         }
@@ -90,7 +92,7 @@
    * Set up MutationObserver to watch for DOM changes
    */
   function setupDOMObserver() {
-    clearTimeout(applyBackgroundImageFiltersTimeout);
+    clearTimeout(applySelectiveFiltersTimeout);
 
     // If an observer already exists from a previous execution of this content script
     // (e.g. due to SPA navigation re-triggering without full page reload),
@@ -130,8 +132,8 @@
 
       if (needsUpdate) {
         // Debounce the update to avoid excessive calls
-        applyBackgroundImageFiltersTimeout = setTimeout(() => {
-          applyBackgroundImageFilters();
+        applySelectiveFiltersTimeout = setTimeout(() => {
+          applySelectiveFilters();
         }, 500);
       }
     });
