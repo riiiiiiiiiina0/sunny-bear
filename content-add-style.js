@@ -44,9 +44,9 @@
   }
 
   /**
-   * Find all elements that should be exempt from the theme and apply a reverse filter.
+   * Exempts certain elements from the theme by applying a counter-filter.
    * This includes images, videos, and elements with background images.
-   * It will not apply filters to elements that already have a filter property.
+   * It appends a counter-filter to any existing filters on the element.
    */
   function applySelectiveFilters() {
     if (
@@ -55,23 +55,13 @@
     ) {
       return;
     }
-    // Query all elements to check for background images, as well as specific media types
     const allElements = document.querySelectorAll('*');
 
     allElements.forEach((element) => {
       if (processedElements.has(element)) return;
-
-      // Ignore anchor tags
       if (element.tagName === 'A') return;
 
       const computedStyle = window.getComputedStyle(element);
-      const existingFilter = computedStyle.filter;
-
-      // If a filter is already applied, skip this element to avoid conflicts
-      if (existingFilter && existingFilter !== 'none') {
-        return;
-      }
-
       const isMediaType = ['IMG', 'VIDEO', 'CANVAS'].includes(element.tagName);
       const hasBackgroundImage =
         computedStyle.backgroundImage &&
@@ -79,8 +69,16 @@
 
       if (isMediaType || hasBackgroundImage) {
         if (element instanceof HTMLElement) {
-          // Apply the reverse filter to cancel out the html-level filter
-          element.style.filter = 'invert(1) hue-rotate(180deg)';
+          const currentFilter =
+            computedStyle.filter === 'none' ? '' : computedStyle.filter;
+          const lightThemeFilter = 'invert(1) hue-rotate(180deg)';
+
+          // Combine the existing filter with our light theme filter to cancel out the global inversion
+          const newFilter = currentFilter
+            ? `${currentFilter} ${lightThemeFilter}`
+            : lightThemeFilter;
+
+          element.style.filter = newFilter;
           element.setAttribute('data-light-theme-filtered', 'true');
           processedElements.add(element);
         }
