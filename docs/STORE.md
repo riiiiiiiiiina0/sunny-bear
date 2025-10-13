@@ -1,32 +1,14 @@
-# Sunny Bear — brighten dark websites with one click
+🐻‍❄️ Sunny Bear
 
-Reading outside or under bright lights? Sunny Bear flips dark pages to a clean, light look so your eyes don’t squint. Click to turn on for a site, click again to turn it off. Easy.
+Tired of squinting at dark websites? Sunny Bear is here to brighten your day! With just one click, it magically turns any dark and gloomy page into a bright, sunny, and readable one. Perfect for browsing outdoors or anytime you need a little more light.
 
-### What it does
+Key Features:
 
-* **Auto theme detection**: No need to add every dark site manually—Sunny Bear now detects whether a page is dark and brightens it automatically when your OS is in light mode
-* **One-click brighten**: Instantly convert dark-theme pages to light when you want
-* **Remembers your choice**: Set once per site; Sunny Bear applies it next time
-* **Smart with dynamic pages**: Keeps new content bright as the page updates (works on SPAs)
-* **Gentle and reversible**: Toggle anytime, no permanent changes
-* **Safer browsing**: Won’t run on restricted/protected pages (e.g. chrome://, extension gallery)
+☀️ One-Click Magic: Instantly switch any website from dark to light theme.
+🕶️ Smart Detection: Automatically knows when a site is in dark mode and applies the light theme for you.
+OS-Friendly: Plays nicely with your system's theme. If your OS is in dark mode, Sunny Bear will respect your choice and won't make changes.
+✅ Always-On List: Add your favorite sites to a list to always have them in light mode.
+❌ Exclusion List: Tell Sunny Bear to skip certain sites that you prefer to keep dark.
+🔄 Easy Toggle: Change your mind? A simple click on the extension icon toggles the theme on or off for any site.
 
-### How to use
-
-1. Install Sunny Bear
-2. Open any website
-3. If your OS is in light mode, Sunny Bear automatically brightens dark pages. You can still click the Sunny Bear icon to toggle manually
-
-### Manage your sites
-
-* Open `Options` to see, edit, import, or export your saved sites
-* Saved list now complements auto detection—you can still pin favorite sites
-
-### Notes
-
-* Some sites may look slightly different when brightened—just toggle off if needed
-* Existing site lists remain compatible
-
-Browse happily, even under the sun. 🌞🐻
-
-Chrome Web Store: `https://chromewebstore.google.com/detail/sunny-bear/jdjdmghffibmbnnhidfhdjegkcemmanb`
+Make your web browsing experience a whole lot sunnier and more comfortable for your eyes. Get Sunny Bear today!
