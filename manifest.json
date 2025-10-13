@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sunny Bear",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "description": "Turn dark sites into bright, readable pages — one click for sunny, outdoor browsing.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2j+Y52nqBjgq1j2NUNX3HkONAXa7SqvM5qnOZBN+kz+qR222sF0jekNggoh1PMVjZLVZDkU1D1vJ1mg9tX9Vw8Iu5hvuh/kM8rvq401/K1q9HSA0is1vzkvZ+t1PJ5VEgJZgDDUD83jZa8NyXbEZJGnaPy0D/ZA6ym7b5Qw8dBAMtaiBt5DJ9x+Y0FTftmFqBzfErfltDoeP+Zuc55NRTzu8+J2lPNP8VzY1GDWJWw81v9AGW1QjHn1esR+zW3W0uZ269q9UlXHcR0gbG8mjERKNDiSLdAoc2W/rq5QekESF7+1ScUvFPd3aVQS7tc+U3MbUNRMRwfqpP6MqtV2yVwIDAQAB",
   "icons": {
