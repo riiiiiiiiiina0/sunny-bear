@@ -2,7 +2,8 @@
 
 Make dark-theme pages sunny and bright. One click flips gloomy sites into a gentle light theme that’s easier to read outdoors or in bright rooms.
 
-![](./docs/poster.jpeg)
+![](./docs/sunny_bear_1_dark_1_1280x800_text.png)
+![](./docs/sunny_bear_1_bright_2_1280x800_text.png)
 
 <a href="https://buymeacoffee.com/riiiiiiiiiina" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-blue.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
